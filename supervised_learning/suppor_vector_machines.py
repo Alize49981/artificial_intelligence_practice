@@ -1,0 +1,55 @@
+import numpy as np
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.svm import SVC
+from sklearn.metrics import accuracy_score, confusion_matrix
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+#create dataset
+data = {
+    'Hours_Study': [1,2,3,4,5,6,7,8,9,10],
+    'Hours_Sleep': [8,7,7,6,5,6,7,6,5,4],
+    'Pass': [0,0,0,0,1,0,1,1,1,1]
+}
+
+df = pd.DataFrame(data)
+X = df[['Hours_Study','Hours_Sleep']]
+y = df['Pass']
+#split data
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+#Train SVM Model
+# Initialize SVM classifier (linear kernel)
+svm_model = SVC(kernel='linear')
+
+# Train
+svm_model.fit(X_train, y_train)
+
+# Predict
+y_pred_svm = svm_model.predict(X_test)
+print("SVM Predictions:", y_pred_svm)
+
+# Accuracy
+print("SVM Accuracy:", accuracy_score(y_test, y_pred_svm))
+
+#visualize division boundary
+# Only for 2D features
+import matplotlib.pyplot as plt
+
+def plot_svm(model, X, y):
+    h = 0.1
+    x_min, x_max = X.iloc[:, 0].min() - 1, X.iloc[:, 0].max() + 1
+    y_min, y_max = X.iloc[:, 1].min() - 1, X.iloc[:, 1].max() + 1
+    xx, yy = np.meshgrid(np.arange(x_min, x_max, h),
+                         np.arange(y_min, y_max, h))
+    Z = model.predict(np.c_[xx.ravel(), yy.ravel()])
+    Z = Z.reshape(xx.shape)
+    plt.contourf(xx, yy, Z, alpha=0.3)
+    plt.scatter(X.iloc[:,0], X.iloc[:,1], c=y, s=50, edgecolors='k')
+    plt.xlabel('Hours_Study')
+    plt.ylabel('Hours_Sleep')
+    plt.title('SVM Decision Boundary')
+    plt.show()
+
+plot_svm(svm_model, X, y)
