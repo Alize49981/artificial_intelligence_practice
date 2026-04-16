@@ -1,0 +1,58 @@
+import tensorflow as tf
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense
+import matplotlib.pyplot as plt
+
+#load dataset
+from tensorflow.keras.datasets import mnist
+
+# Load dataset
+(X_train, y_train), (X_test, y_test) = mnist.load_data()
+
+# Normalize pixel values
+X_train = X_train.reshape(-1,28,28,1) / 255.0
+X_test = X_test.reshape(-1,28,28,1) / 255.0
+
+print("Training shape:", X_train.shape)
+print("Test shape:", X_test.shape)
+
+#builds CNN
+model = Sequential()
+
+# Convolutional layer
+model.add(Conv2D(filters=32, kernel_size=(3,3), activation='relu', input_shape=(28,28,1)))
+
+# Max pooling layer
+model.add(MaxPooling2D(pool_size=(2,2)))
+
+# Flatten to feed into dense layers
+model.add(Flatten())
+
+# Fully connected layer
+model.add(Dense(128, activation='relu'))
+
+# Output layer
+model.add(Dense(10, activation='softmax'))  # 10 classes for digits 0-9
+
+# Compile model
+model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+
+model.summary()
+
+#train model
+history = model.fit(X_train, y_train, epochs=5, validation_data=(X_test, y_test))
+#evaluate model
+loss, accuracy = model.evaluate(X_test, y_test)
+print(f"Test Accuracy: {accuracy:.4f}")
+
+#make predictions
+import numpy as np
+
+sample = X_test[0].reshape(1,28,28,1)
+pred = np.argmax(model.predict(sample))
+print("Predicted digit:", pred)
+
+# Visualize
+plt.imshow(X_test[0].reshape(28,28), cmap='gray')
+plt.title(f"Predicted: {pred}")
+plt.show()
